@@ -1,8 +1,8 @@
 // Telegram Bot & Webhook Integration Service
 
 const TELEGRAM_CONFIG = {
-  botToken: '8784825775:AAG4ZDukSUOudvr4A23vwFCACRhga6-3-4o',
-  chatId: '5018626662',
+  botToken: '8887127712:AAHWi5vnIojYnbYf6pj-8a8J6sNmgR9HCHU',
+  chatId: '5266042285',
   webhookUrl: ''
 };
 
