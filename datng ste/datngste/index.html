@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AmourLuxe - Exclusive Photos & Private Meetups</title>
+    <meta name="description" content="An exclusive platform for photo gallery sharing, private real-time chat, and curated date scheduling.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons FontAwesome fallback via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="theme-dark">
+
+    <!-- Glowing Background Lights -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="brand-logo" id="brandLogo">
+                <span class="logo-icon"><i class="fa-solid fa-heart-pulse"></i></span>
+                <span class="logo-text">Amour<span class="highlight">Luxe</span></span>
+            </a>
+
+            <!-- Mode Switcher Pill -->
+            <div class="mode-switcher-container">
+                <span class="mode-label"><i class="fa-solid fa-user-shield"></i> View Mode:</span>
+                <div class="mode-toggle" id="modeToggle">
+                    <button class="mode-btn active" data-mode="client" id="clientModeBtn">
+                        <i class="fa-solid fa-user"></i> Client
+                    </button>
+                    <button class="mode-btn" data-mode="host" id="hostModeBtn">
+                        <i class="fa-solid fa-crown"></i> Host / Admin
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Nav Links -->
+            <nav class="nav-links">
+                <button class="nav-btn active" data-tab="gallery" id="navGallery">
+                    <i class="fa-regular fa-image"></i> Photo Vault
+                </button>
+                <button class="nav-btn" data-tab="chat" id="navChat">
+                    <i class="fa-regular fa-comments"></i> Private Chat
+                    <span class="badge" id="chatBadge">2</span>
+                </button>
+                <button class="nav-btn" data-tab="meetups" id="navMeetups">
+                    <i class="fa-regular fa-calendar-check"></i> Book a Date
+                    <span class="badge warning" id="meetupBadge">1</span>
+                </button>
+                <button class="nav-btn" data-tab="bio" id="navBio">
+                    <i class="fa-regular fa-id-card"></i> Profile & Bio
+                </button>
+            </nav>
+
+            <!-- Quick Action Button -->
+            <div class="header-actions">
+                <button class="btn btn-primary btn-sparkle" id="uploadTriggerBtn">
+                    <i class="fa-solid fa-plus"></i> <span id="uploadBtnText">Upload Photo</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Role Indicator Notice Bar -->
+    <div class="role-notice-bar" id="roleNoticeBar">
+        <div class="notice-content">
+            <i class="fa-solid fa-circle-info"></i>
+            <span id="roleNoticeText">You are currently viewing as a <strong>Client</strong>. Browse photos, chat with the host, or request a meeting!</span>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <main class="app-main">
+
+        <!-- ================= SECTION 1: GALLERY & PHOTO VAULT ================= -->
+        <section class="tab-content active" id="tabGallery">
+            <!-- Host Hero Profile Header -->
+            <div class="profile-hero-card glass-panel">
+                <div class="hero-avatar-wrapper">
+                    <img src="assets/host_portrait.jpg" alt="Elena Vance - Host" class="hero-avatar" id="heroAvatar">
+                    <span class="online-indicator"></span>
+                </div>
+                <div class="hero-info">
+                    <div class="hero-title-row">
+                        <h1 class="hero-name" id="heroName">Elena Vance</h1>
+                        <span class="verified-badge" title="Verified Profile"><i class="fa-solid fa-certificate"></i> Verified Host</span>
+                        <span class="vip-tag"><i class="fa-solid fa-star"></i> Premium VIP</span>
+                    </div>
+                    <p class="hero-tagline" id="heroTagline">Designer & Travel Enthusiast • Seeking meaningful connections & memorable dates.</p>
+                    <div class="hero-meta">
+                        <span><i class="fa-solid fa-location-dot"></i> <span id="heroLocation">Manhattan, NY & Traveling</span></span>
+                        <span><i class="fa-solid fa-heart"></i> <span id="totalLikesCount">142</span> Favorites</span>
+                        <span><i class="fa-solid fa-camera"></i> <span id="totalPhotosCount">6</span> Photos</span>
+                        <span><i class="fa-solid fa-bolt"></i> Fast Responder</span>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn btn-outline" id="quickChatBtn"><i class="fa-solid fa-paper-plane"></i> Message Me</button>
+                    <button class="btn btn-primary" id="quickMeetupBtn"><i class="fa-solid fa-wine-glass"></i> Request a Date</button>
+                </div>
+            </div>
+
+            <!-- Gallery Controls & Filters -->
+            <div class="gallery-controls">
+                <div class="filter-pills" id="filterPills">
+                    <button class="filter-pill active" data-filter="all">All Photos</button>
+                    <button class="filter-pill" data-filter="Glamour">Glamour</button>
+                    <button class="filter-pill" data-filter="Casual">Casual</button>
+                    <button class="filter-pill" data-filter="Travel">Travel & Lifestyle</button>
+                    <button class="filter-pill" data-filter="Evening">Evening Out</button>
+                    <button class="filter-pill" data-filter="vip"><i class="fa-solid fa-lock"></i> VIP Exclusive</button>
+                </div>
+                <div class="gallery-search">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="gallerySearchInput" placeholder="Search photos by keyword...">
+                </div>
+            </div>
+
+            <!-- Photo Grid -->
+            <div class="photo-grid" id="photoGrid">
+                <!-- Dynamically rendered photo cards -->
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: PRIVATE CHAT ================= -->
+        <section class="tab-content" id="tabChat">
+            <div class="chat-layout glass-panel">
+                <!-- Chat Sidebar (Conversations) -->
+                <aside class="chat-sidebar">
+                    <div class="sidebar-header">
+                        <h2><i class="fa-solid fa-comments"></i> Messages</h2>
+                        <span class="active-count" id="activeChatCount">Online Now</span>
+                    </div>
+                    <div class="conversations-list" id="conversationsList">
+                        <!-- Rendered list of clients or host chat -->
+                    </div>
+                </aside>
+
+                <!-- Main Chat Window -->
+                <div class="chat-window">
+                    <div class="chat-header" id="chatHeader">
+                        <div class="chat-user-info">
+                            <div class="avatar-sm-wrap">
+                                <img src="assets/host_portrait.jpg" alt="Chat User" class="chat-header-avatar" id="chatHeaderAvatar">
+                                <span class="status-dot online"></span>
+                            </div>
+                            <div>
+                                <h3 id="chatHeaderName">Elena Vance</h3>
+                                <span class="subtext" id="chatHeaderStatus">Online • Usually replies instantly</span>
+                            </div>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button class="icon-btn" title="Schedule Date" id="chatScheduleBtn"><i class="fa-solid fa-calendar-plus"></i></button>
+                            <button class="icon-btn" title="View Profile" id="chatProfileBtn"><i class="fa-solid fa-user-circle"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Feed -->
+                    <div class="messages-feed" id="messagesFeed">
+                        <!-- Messages dynamically populated -->
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator hidden" id="typingIndicator">
+                        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                        <span id="typingUserText">Elena is typing...</span>
+                    </div>
+
+                    <!-- Message Input Bar -->
+                    <form class="chat-input-bar" id="chatForm">
+                        <button type="button" class="icon-btn attachment-btn" id="attachPhotoBtn" title="Send Photo">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <input type="text" id="messageInput" placeholder="Type a private message..." autocomplete="off">
+                        <button type="submit" class="btn btn-primary send-btn">
+                            <i class="fa-solid fa-paper-plane"></i> Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: BOOK A DATE / MEETUPS ================= -->
+        <section class="tab-content" id="tabMeetups">
+            <div class="meetups-header glass-panel">
+                <div class="meetups-title">
+                    <h2><i class="fa-solid fa-wine-glass-drop"></i> Private Meetup & Date Manager</h2>
+                    <p>Arrange an exclusive meeting, dinner date, or coffee linkup with clear availability and preferences.</p>
+                </div>
+                <button class="btn btn-primary" id="createNewMeetupBtn">
+                    <i class="fa-solid fa-calendar-plus"></i> Propose New Date
+                </button>
+            </div>
+
+            <div class="meetups-grid">
+                <!-- Left Column: Scheduled Appointments & Requests -->
+                <div class="meetups-list-container glass-panel">
+                    <div class="container-title">
+                        <h3><i class="fa-solid fa-list-check"></i> Meetup Requests & Bookings</h3>
+                        <div class="status-filters" id="meetupStatusFilter">
+                            <button class="mini-pill active" data-status="all">All</button>
+                            <button class="mini-pill" data-status="pending">Pending</button>
+                            <button class="mini-pill" data-status="confirmed">Confirmed</button>
+                        </div>
+                    </div>
+                    <div class="meetups-cards-list" id="meetupsCardsList">
+                        <!-- Rendered meetup cards -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Host Preferences & Ideas -->
+                <div class="date-ideas-container glass-panel">
+                    <h3><i class="fa-solid fa-sparkles"></i> Preferred Date Concepts</h3>
+                    <p class="subtext">Select an idea below to quickly autofill your meetup request!</p>
+                    <div class="idea-cards">
+                        <div class="idea-card" data-concept="Rooftop Cocktail Hour">
+                            <div class="idea-icon"><i class="fa-solid fa-martini-glass-citrus"></i></div>
+                            <div class="idea-text">
+                                <h4>Rooftop Sunset Drinks</h4>
+                                <p>Relaxed ambiance with city views, artisan cocktails, and open conversation.</p>
+                            </div>
+                        </div>
+                        <div class="idea-card" data-concept="Fine Dining & Wine Tasting">
+                            <div class="idea-icon"><i class="fa-solid fa-utensils"></i></div>
+                            <div class="idea-text">
+                                <h4>Fine Dining Experience</h4>
+                                <p>Candlelit dinner at a top Michelin-starred spot or intimate bistro.</p>
+                            </div>
+                        </div>
+                        <div class="idea-card" data-concept="Art Gallery & Coffee Walk">
+                            <div class="idea-icon"><i class="fa-solid fa-palette"></i></div>
+                            <div class="idea-text">
+                                <h4>Art Gallery & Espresso</h4>
+                                <p>Contemporary art gallery stroll followed by gourmet espresso.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: PROFILE & BIO EDITOR ================= -->
+        <section class="tab-content" id="tabBio">
+            <div class="profile-settings-layout glass-panel">
+                <div class="settings-sidebar">
+                    <div class="settings-avatar-preview">
+                        <img src="assets/host_portrait.jpg" id="bioAvatarPreview" alt="Profile Preview">
+                        <button class="btn btn-sm btn-outline mt-2" id="changeAvatarBtn"><i class="fa-solid fa-camera"></i> Change Photo</button>
+                    </div>
+                    <div class="profile-stats-card">
+                        <h4>Profile Summary</h4>
+                        <ul>
+                            <li><i class="fa-solid fa-eye"></i> Views: <strong>1,240</strong></li>
+                            <li><i class="fa-solid fa-heart"></i> Favorites: <strong id="bioLikesCount">142</strong></li>
+                            <li><i class="fa-solid fa-shield-halved"></i> Privacy: <strong>VIP Protected</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="settings-form-container">
+                    <h2><i class="fa-solid fa-user-gear"></i> Host Profile & Meeting Rules</h2>
+                    <p class="subtext">Customize your profile info, bio, expectations, and meeting guidelines seen by clients.</p>
+
+                    <form id="profileForm" class="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inputHostName">Full Display Name</label>
+                                <input type="text" id="inputHostName" value="Elena Vance">
+                            </div>
+                            <div class="form-group">
+                                <label for="inputHostLocation">Primary City / Location</label>
+                                <input type="text" id="inputHostLocation" value="Manhattan, NY & Traveling">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inputHostTagline">Headline Tagline</label>
+                            <input type="text" id="inputHostTagline" value="Designer & Travel Enthusiast • Seeking meaningful connections & memorable dates.">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inputHostBio">About Me & Personal Vibe</label>
+                            <textarea id="inputHostBio" rows="4">Welcome to my private space! I love high fashion, spontaneous weekend getaways, contemporary art, and deep late-night conversations. Browse through my photo vault, leave a message, or propose a date if you'd like to get to know me better.</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Interests & Favorite Activities (Comma Separated)</label>
+                            <input type="text" id="inputHostInterests" value="Fine Dining, Luxury Travel, Contemporary Art, Wine Tasting, Fashion Design, Fitness">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inputHostRules">Meeting Guidelines & Availability</label>
+                            <textarea id="inputHostRules" rows="3">Please propose meetups at least 24 hours in advance. Public venues only for first meetings. Polite & respectful gentleman etiquette expected.</textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Profile Settings</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODALS & OVERLAYS ================= -->
+
+    <!-- Modal 1: Upload Photo Modal (Host feature) -->
+    <div class="modal-overlay hidden" id="uploadModal">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo to Vault</h3>
+                <button class="close-modal-btn" id="closeUploadModal">&times;</button>
+            </div>
+            <form id="uploadPhotoForm" class="modal-body">
+                <div class="drag-drop-zone" id="dragDropZone">
+                    <i class="fa-solid fa-images upload-icon"></i>
+                    <p class="drop-text">Drag & drop your photo here or <span class="highlight">Browse file</span></p>
+                    <input type="file" id="photoFileInput" accept="image/*" class="hidden-file-input">
+                    <div class="image-preview-container hidden" id="uploadPreviewContainer">
+                        <img src="" id="uploadPreviewImg" alt="Preview">
+                        <button type="button" class="btn-remove-preview" id="removePreviewBtn"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+
+                <div class="form-group mt-3">
+                    <label for="photoCaption">Caption / Description</label>
+                    <input type="text" id="photoCaption" placeholder="e.g. Sunset drinks on the rooftop lounge in Paris..." required>
+                </div>
+
+                <div class="form-row mt-2">
+                    <div class="form-group">
+                        <label for="photoCategory">Category Tag</label>
+                        <select id="photoCategory">
+                            <option value="Glamour">Glamour</option>
+                            <option value="Casual">Casual</option>
+                            <option value="Travel">Travel & Lifestyle</option>
+                            <option value="Evening">Evening Out</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="photoPrivacy">Access Permission</label>
+                        <select id="photoPrivacy">
+                            <option value="public">Public Gallery</option>
+                            <option value="vip">VIP Only (Locked)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer mt-4">
+                    <button type="button" class="btn btn-outline" id="cancelUploadBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-upload"></i> Publish Photo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2: Lightbox Fullscreen Photo Viewer -->
+    <div class="modal-overlay lightbox-overlay hidden" id="lightboxModal">
+        <div class="lightbox-container">
+            <button class="close-lightbox" id="closeLightboxBtn">&times;</button>
+            <div class="lightbox-media">
+                <img src="" id="lightboxImg" alt="Enlarged View">
+            </div>
+            <div class="lightbox-details glass-panel">
+                <div class="lightbox-header">
+                    <div class="author-info">
+                        <img src="assets/host_portrait.jpg" class="avatar-xs" alt="Host">
+                        <div>
+                            <h4 id="lightboxAuthor">Elena Vance</h4>
+                            <span class="subtext" id="lightboxTime">Just now</span>
+                        </div>
+                    </div>
+                    <span class="category-badge" id="lightboxCategory">Glamour</span>
+                </div>
+                <p class="lightbox-caption" id="lightboxCaption">Photo caption here...</p>
+
+                <div class="lightbox-actions">
+                    <button class="action-icon-btn" id="lightboxLikeBtn">
+                        <i class="fa-regular fa-heart"></i> <span id="lightboxLikeCount">0</span>
+                    </button>
+                    <button class="action-icon-btn" id="lightboxCommentBtn">
+                        <i class="fa-regular fa-comment"></i> <span id="lightboxCommentCount">0</span>
+                    </button>
+                    <button class="btn btn-sm btn-primary ml-auto" id="lightboxChatTrigger">
+                        <i class="fa-solid fa-paper-plane"></i> Chat about this photo
+                    </button>
+                </div>
+
+                <!-- Lightbox Comments Section -->
+                <div class="lightbox-comments" id="lightboxComments">
+                    <!-- Dynamic comments list -->
+                </div>
+
+                <form class="comment-input-form" id="commentForm">
+                    <input type="text" id="commentInput" placeholder="Add a comment..." required>
+                    <button type="submit" class="btn btn-sm btn-primary">Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 3: Request Date / Meetup Modal -->
+    <div class="modal-overlay hidden" id="meetupModal">
+        <div class="modal-card glass-panel">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-wine-glass"></i> Propose a Private Date</h3>
+                <button class="close-modal-btn" id="closeMeetupModal">&times;</button>
+            </div>
+            <form id="meetupForm" class="modal-body">
+                <div class="form-group">
+                    <label for="meetupConcept">Select Date Concept</label>
+                    <select id="meetupConcept" required>
+                        <option value="Rooftop Sunset Drinks">Rooftop Sunset Drinks</option>
+                        <option value="Fine Dining & Wine Tasting">Fine Dining & Wine Tasting</option>
+                        <option value="Art Gallery & Espresso Walk">Art Gallery & Espresso Walk</option>
+                        <option value="Weekend Concert / Gala VIP">Weekend Concert / Gala VIP</option>
+                        <option value="Casual Coffee Connection">Casual Coffee Connection</option>
+                    </select>
+                </div>
+
+                <div class="form-row mt-2">
+                    <div class="form-group">
+                        <label for="meetupDate">Preferred Date</label>
+                        <input type="date" id="meetupDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="meetupTime">Preferred Time Slot</label>
+                        <input type="time" id="meetupTime" required>
+                    </div>
+                </div>
+
+                <div class="form-group mt-2">
+                    <label for="meetupLocation">Proposed Location / City Venue</label>
+                    <input type="text" id="meetupLocation" placeholder="e.g. The Baccarat Lounge, NYC" required>
+                </div>
+
+                <div class="form-group mt-2">
+                    <label for="meetupNote">Message / Note for Host</label>
+                    <textarea id="meetupNote" rows="3" placeholder="Share a few words about yourself and what you're looking forward to..." required></textarea>
+                </div>
+
+                <div class="modal-footer mt-4">
+                    <button type="button" class="btn btn-outline" id="cancelMeetupBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Submit Date Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
